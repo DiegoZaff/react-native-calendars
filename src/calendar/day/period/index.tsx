@@ -1,13 +1,22 @@
+/* eslint-disable react-native/no-inline-styles */
 import PropTypes from 'prop-types';
 import React, {useCallback, useRef, useMemo} from 'react';
-import {TouchableWithoutFeedback, TouchableOpacity, Text, View, ViewStyle, ViewProps, TextStyle, StyleProp} from 'react-native';
+import {
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+  Text,
+  View,
+  ViewStyle,
+  ViewProps,
+  TextStyle,
+  StyleProp
+} from 'react-native';
 
 import {xdateToData} from '../../../interface';
 import {Theme, DayState, DateData} from '../../../types';
 import styleConstructor from './style';
 import Dot from '../dot';
 import {MarkingProps} from '../marking';
-
 
 export interface PeriodDayProps extends ViewProps {
   theme?: Theme;
@@ -26,12 +35,15 @@ type MarkingStyle = {
   startingDay?: ViewStyle;
   endingDay?: ViewStyle;
   day?: ViewStyle;
-}
+};
 
 const PeriodDay = (props: PeriodDayProps) => {
   const {theme, marking, date, onPress, onLongPress, state, accessibilityLabel, testID, children} = props;
   const dateData = date ? xdateToData(date) : undefined;
   const style = useRef(styleConstructor(theme));
+
+  const isLeftBlocker = useRef(false);
+  const isRightBlocker = useRef(false);
 
   const markingStyle = useMemo(() => {
     const defaultStyle: MarkingStyle = {textStyle: {}, containerStyle: {}};
@@ -46,7 +58,7 @@ const PeriodDay = (props: PeriodDayProps) => {
       } else if (marking.selected) {
         defaultStyle.textStyle = {color: style.current.selectedText.color};
       }
-  
+
       if (marking.startingDay) {
         defaultStyle.startingDay = {backgroundColor: marking.color};
       }
@@ -56,7 +68,7 @@ const PeriodDay = (props: PeriodDayProps) => {
       if (!marking.startingDay && !marking.endingDay) {
         defaultStyle.day = {backgroundColor: marking.color};
       }
-      
+
       if (marking.textColor) {
         defaultStyle.textStyle = {color: marking.textColor};
       }
@@ -66,7 +78,7 @@ const PeriodDay = (props: PeriodDayProps) => {
       if (marking.customContainerStyle) {
         defaultStyle.containerStyle = marking.customContainerStyle;
       }
-  
+
       return defaultStyle;
     }
   }, [marking]);
@@ -83,7 +95,7 @@ const PeriodDay = (props: PeriodDayProps) => {
         borderRadius: 17,
         overflow: 'hidden'
       });
-      
+
       if (markingStyle.containerStyle) {
         containerStyle.push(markingStyle.containerStyle);
       }
@@ -91,9 +103,19 @@ const PeriodDay = (props: PeriodDayProps) => {
       const start = markingStyle.startingDay;
       const end = markingStyle.endingDay;
       if (start && !end) {
-        containerStyle.push({backgroundColor: markingStyle.startingDay?.backgroundColor});
-      } else if (end && !start || end && start) {
-        containerStyle.push({backgroundColor: markingStyle.endingDay?.backgroundColor});
+        isRightBlocker.current = true;
+        containerStyle.push({
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderColor: markingStyle.startingDay?.backgroundColor
+        });
+      } else if ((end && !start) || (end && start)) {
+        isLeftBlocker.current = true;
+        containerStyle.push({
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderColor: markingStyle.endingDay?.backgroundColor
+        });
       }
     }
     return containerStyle;
@@ -128,13 +150,27 @@ const PeriodDay = (props: PeriodDayProps) => {
     const end = markingStyle.endingDay;
 
     if (start && !end) {
-      rightFillerStyle.backgroundColor = markingStyle.startingDay?.backgroundColor;
+      rightFillerStyle.backgroundColor = 'transparent';
+      rightFillerStyle.borderTopWidth = 2;
+      rightFillerStyle.borderTopColor = markingStyle.startingDay?.backgroundColor;
+      rightFillerStyle.borderBottomWidth = 2;
+      rightFillerStyle.borderBottomColor = markingStyle.startingDay?.backgroundColor;
     } else if (end && !start) {
-      leftFillerStyle.backgroundColor = markingStyle.endingDay?.backgroundColor;
+      leftFillerStyle.backgroundColor = 'transparent';
+      leftFillerStyle.borderTopWidth = 2;
+      leftFillerStyle.borderTopColor = markingStyle.endingDay?.backgroundColor;
+      leftFillerStyle.borderBottomWidth = 2;
+      leftFillerStyle.borderBottomColor = markingStyle.endingDay?.backgroundColor;
     } else if (markingStyle.day) {
-      leftFillerStyle.backgroundColor = markingStyle.day?.backgroundColor;
-      rightFillerStyle.backgroundColor = markingStyle.day?.backgroundColor;
-      fillerStyle = {backgroundColor: markingStyle.day?.backgroundColor};
+      leftFillerStyle.backgroundColor = 'transparent';
+      rightFillerStyle.backgroundColor = 'transparent';
+      fillerStyle = {
+        backgroundColor: 'transparent',
+        borderTopWidth: 2,
+        borderTopColor: markingStyle.day?.backgroundColor,
+        borderBottomWidth: 2,
+        borderBottomColor: markingStyle.day?.backgroundColor
+      };
     }
 
     return {leftFillerStyle, rightFillerStyle, fillerStyle};
@@ -144,8 +180,8 @@ const PeriodDay = (props: PeriodDayProps) => {
     if (marking) {
       return (
         <View style={[style.current.fillers, fillerStyles.fillerStyle]}>
-          <View style={[style.current.leftFiller, fillerStyles.leftFillerStyle]}/>
-          <View style={[style.current.rightFiller, fillerStyles.rightFillerStyle]}/>
+          <View style={[style.current.leftFiller, fillerStyles.leftFillerStyle]} />
+          <View style={[style.current.rightFiller, fillerStyles.rightFillerStyle]} />
         </View>
       );
     }
@@ -158,9 +194,9 @@ const PeriodDay = (props: PeriodDayProps) => {
   const _onLongPress = useCallback(() => {
     onLongPress?.(dateData);
   }, [onLongPress]);
-    
+
   const Component = marking ? TouchableWithoutFeedback : TouchableOpacity;
-  
+
   return (
     <Component
       testID={testID}
@@ -173,12 +209,22 @@ const PeriodDay = (props: PeriodDayProps) => {
     >
       <View style={style.current.wrapper}>
         {renderFillers()}
-        <View style={containerStyle}>
+        <View style={[containerStyle, {overflow: 'visible'}]}>
+          {isLeftBlocker.current == true && (
+            <View
+              style={{position: 'absolute', width: 20, height: 30, backgroundColor: theme?.blockerColor, left: -2}}
+            />
+          )}
+          {isRightBlocker.current == true && (
+            <View
+              style={{position: 'absolute', width: 20, height: 30, backgroundColor: theme?.blockerColor, right: -2}}
+            />
+          )}
           <Text allowFontScaling={false} style={textStyle}>
             {String(children)}
           </Text>
           <View style={style.current.dotContainer}>
-            <Dot theme={theme} color={marking?.dotColor} marked={marking?.marked}/>
+            <Dot theme={theme} color={marking?.dotColor} marked={marking?.marked} />
           </View>
         </View>
       </View>

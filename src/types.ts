@@ -102,6 +102,9 @@ export interface Theme {
   dotTopPos?: number;
   dotRightPos?: number;
   dotLeftPos?: number;
+
+  //hide semi circumferance.
+  blockerColor?: string;
 }
 
 export type AgendaEntry = {
