@@ -166,9 +166,9 @@ const PeriodDay = (props: PeriodDayProps) => {
       rightFillerStyle.backgroundColor = 'transparent';
       fillerStyle = {
         backgroundColor: 'transparent',
-        borderTopWidth: 2,
+        borderTopWidth: markingStyle.day?.backgroundColor ? 2 : undefined,
         borderTopColor: markingStyle.day?.backgroundColor,
-        borderBottomWidth: 2,
+        borderBottomWidth: markingStyle.day?.backgroundColor ? 2 : undefined,
         borderBottomColor: markingStyle.day?.backgroundColor
       };
     }
