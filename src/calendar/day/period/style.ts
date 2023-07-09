@@ -46,7 +46,10 @@ export default function styleConstructor(theme: Theme = {}) {
     },
     dotContainer: {
       position: 'absolute',
-      bottom: 3
+      bottom: appStyle.dotBottomPos ?? 3,
+      top: appStyle.dotTopPos,
+      right: appStyle.dotRightPos,
+      left: appStyle.dotLeftPos
     },
     today: {
       backgroundColor: appStyle.todayBackgroundColor
