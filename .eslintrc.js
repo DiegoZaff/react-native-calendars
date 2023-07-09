@@ -21,7 +21,7 @@ module.exports = {
   plugins: ['react', 'react-native', 'jest', '@typescript-eslint'],
   rules: {
     semi: ['error', 'always'],
-    'linebreak-style': ['error', 'unix'],
+    'linebreak-style': ['error', 'windows'],
     'no-unused-vars': 1,
     'object-curly-spacing': ['error', 'never'],
     'react/jsx-uses-react': 2,
